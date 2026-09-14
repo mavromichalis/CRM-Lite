@@ -51,6 +51,7 @@ def create_user(username,password,real_name,role,is_active):
             """
         ,(generate_id('users'),username,hash(password),real_name,role,is_active))
         conn.commit()
+        generate_logs(username,'User signed up.')
         return generate_user_object(cur.lastrowid())
     except Exception:
         conn.rollback()

@@ -13,3 +13,17 @@ CREATE TABLE logs(
     timestamp TEXT NOT NULL,
     action TEXT NOT NULL
 );
+
+CREATE TABLE customers(
+    id INTEGER PRIMARY KEY,
+    type TEXT NOT NULL,
+    f_name TEXT,
+    l_name TEXT NOT NULL,
+    vat TEXT NOT NULL UNIQUE,
+    phone TEXT NOT NULL,
+    address TEXT,
+    orders TEXT[],
+    created_at TEXT NOT NULL,
+    last_modified TEXT,
+    status TEXT NOT NULL
+);

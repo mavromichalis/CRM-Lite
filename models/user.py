@@ -24,4 +24,14 @@ class User:
         finally:
             conn.close()
 
+    def get_info(self):
+        return{
+            "User ID: ":self.id,
+            "Username: ":self.username,
+            "Name: ":self.name,
+            "Role: ":self.role,
+            "Activity Status: ":self.is_active
+        }
+
+    
     
