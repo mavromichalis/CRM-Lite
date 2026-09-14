@@ -35,3 +35,12 @@ CREATE TABLE orders(
     products = TEXT[],
     price DECIMAL(10,2)
 );
+
+CREATE TABLE products(
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    variants TEXT [],
+    descr TEXT,
+    stock INTEGER NOT NULL
+);
