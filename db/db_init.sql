@@ -27,3 +27,11 @@ CREATE TABLE customers(
     last_modified TEXT,
     status TEXT NOT NULL
 );
+
+CREATE TABLE orders(
+    id INTEGER PRIMARY KEY,
+    status TEXT NOT NULL,
+    customer_id INTEGER REFERENCES customers(id),
+    products = TEXT[],
+    price DECIMAL(10,2)
+);
