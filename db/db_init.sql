@@ -4,7 +4,7 @@ CREATE TABLE users(
     password_hash VARCHAR(64) NOT NULL,
     real_name TEXT NOT NULL,
     role TEXT NOT NULL,
-    is_active TEXT NOT NULL default='active'
+    is_active TEXT NOT NULL DEFAULT'active'
 );
 
 CREATE TABLE logs(
@@ -32,7 +32,7 @@ CREATE TABLE orders(
     id INTEGER PRIMARY KEY,
     status TEXT NOT NULL,
     customer_id INTEGER REFERENCES customers(id),
-    products = TEXT[],
+    products TEXT[],
     price DECIMAL(10,2)
 );
 
