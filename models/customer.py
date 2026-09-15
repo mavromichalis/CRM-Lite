@@ -51,7 +51,7 @@ class Customer:
         try:
             cur.execute(
                 """
-                UPDATE clients SET status = %s WHERE id = %s
+                UPDATE customers SET status = %s WHERE id = %s
                 """
             ,(new_status,self.id))
             conn.commit()
