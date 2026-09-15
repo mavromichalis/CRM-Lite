@@ -28,7 +28,7 @@ class User:
         return{
             "User ID: ":self.id,
             "Username: ":self.username,
-            "Name: ":self.name,
+            "Name: ":self.real_name,
             "Role: ":self.role,
             "Activity Status: ":self.is_active
         }
