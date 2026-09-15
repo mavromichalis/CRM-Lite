@@ -3,7 +3,7 @@ import datetime as dt
 from .id_generator import generate_log_id
 
 def generate_logs(user,event):
-    time = str(dt.now())
+    time = str(dt.datetime.now())
     conn,cur = connect_db()
     log_id = generate_log_id()
     try:
@@ -13,7 +13,7 @@ def generate_logs(user,event):
             """
         ,(log_id,user,time,event))
         conn.commit()
-        return id 
+        return log_id 
     except Exception:
         return None
     finally:
