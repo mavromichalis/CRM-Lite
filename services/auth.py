@@ -45,14 +45,15 @@ def generate_user_object(id):
 def create_user(username,password,real_name,role,is_active):
     conn , cur = connect_db()
     try:
+        id = generate_id('users')
         cur.execute(
             """
             INSERT INTO users (id,username,password_hash,real_name,role,is_active) VALUES (%s,%s,%s,%s,%s,%s)
             """
-        ,(generate_id('users'),username,hash(password),real_name,role,is_active))
+        ,(id,username,hash(password),real_name,role,is_active))
         conn.commit()
         generate_logs(username,'User signed up.')
-        return generate_user_object(cur.lastrowid())
+        return generate_user_object(id)
     except Exception:
         conn.rollback()
         return None
