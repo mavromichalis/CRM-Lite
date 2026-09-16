@@ -16,7 +16,7 @@ def create_order(status,customer_id,products):
             res = cur.fetchone()
             if res is None:
                 raise Exception
-            price+=res
+            price+=res[0]
         cur.execute(
             """
             INSERT INTO orders (id,status,customer_id,products,price) VALUES (%s,%s,%s,%s,%s)
