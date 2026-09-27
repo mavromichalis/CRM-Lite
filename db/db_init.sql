@@ -19,7 +19,7 @@ CREATE TABLE customers(
     type TEXT NOT NULL,
     f_name TEXT,
     l_name TEXT NOT NULL,
-    vat TEXT NOT NULL UNIQUE,
+    vat TEXT ,
     phone TEXT NOT NULL,
     address TEXT,
     orders TEXT[],
