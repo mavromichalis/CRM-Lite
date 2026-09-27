@@ -24,5 +24,19 @@ def update_stock(product):
     except Exception:
         conn.rollback()
     finally:conn.close()
+
+def add_stock(product_id,added_stock):
+    conn , cur = connect_db()
+    try:
+        cur.execute(
+            """
+            UPDATE products SET stock = stock + %s WHERE id = %s
+            """
+        ,(added_stock,product_id))
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        return False
+    finally: conn.close()
     
-        

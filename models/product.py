@@ -1,4 +1,5 @@
 from ..db.connection import connect_db
+from ..services.products import * 
 
 class Product:
     def __init__(self,id,name,price,variants,descr,stock):
@@ -9,20 +10,9 @@ class Product:
         self.descr = descr
         self.stock = stock
 
-    def restock(self,new_stock):
-        conn , cur = connect_db()
-        temp = self.stock
-        try:
-            cur.execute(
-                """
-                UPDATE products SET stock = %s WHERE id = %s
-                """
-            ,(new_stock,self.id))
-            conn.commit()
-            self.stock = new_stock
-        except Exception:
-            self.stock = temp
-            conn.rollback()
-        finally:
-            conn.close()
+    def restock(self,added_stock):
+        if add_stock(self.id,added_stock) == True:
+            self.stock+=added_stock
+            
+
     
