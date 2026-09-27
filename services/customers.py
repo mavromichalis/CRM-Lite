@@ -2,6 +2,7 @@ from ..db.connection import connect_db
 from datetime import datetime
 from ..utils.id_generator import generate_id
 from ..models.customer import Customer
+from ..models.errors import CustomerNotFound
 
 def add_customer(type,f_name,l_name,vat,phone,address,status):
     conn,cur = connect_db()
@@ -30,7 +31,7 @@ def append_order(id,order_id):
         ,(id,))
         res = cur.fetchone()
         if not res:
-            raise Exception
+            raise CustomerNotFound
         current_orders = res[0]
         current_orders.append(order_id)
         cur.execute(
@@ -40,6 +41,12 @@ def append_order(id,order_id):
         ,(current_orders,id))
         conn.commit()
         return True
+    except CustomerNotFound:
+        return {
+            "Code":CustomerNotFound.code,
+            "Message":CustomerNotFound.message,
+            "Status Code":CustomerNotFound.status_code
+        }
     except Exception:
         conn.rollback()
         return False
@@ -62,11 +69,25 @@ def update_status(id,new_status):
     try:
         cur.execute(
             """
+            SELECT 1 FROM customers WHERE id = %s
+            """
+        )
+        res = cur.fetchone()
+        if not res:
+            raise CustomerNotFound
+        cur.execute(
+            """
             UPDATE customers SET status = %s WHERE id = %s
             """
         ,(new_status,id))
         conn.commit()
         return True
+    except CustomerNotFound:
+        return {
+            "Code":CustomerNotFound.code,
+            "Message":CustomerNotFound.message,
+            "Status Code":CustomerNotFound.status_code
+        }
     except Exception:
         conn.rollback()
         return False
