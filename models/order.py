@@ -1,4 +1,4 @@
-from ..db.connection import connect_db
+from ..services.orders import *
 
 class Order:
     def __init__(self,id,status,customer_id,products,price):
@@ -9,18 +9,9 @@ class Order:
         self.price = price
 
     def update_status(self,new_status):
-        conn , cur = connect_db()
-        try:
-            cur.execute(
-                """
-                UPDATE orders SET status = %s WHERE id = %s
-                """
-            ,(new_status,self.id))
-            conn.commit()
+        if update_order_status(self.id,new_status) == True:
             self.status = new_status
-        except Exception:
-            conn.rollback()
-        finally:
-            conn.close()
+
+    
     
     

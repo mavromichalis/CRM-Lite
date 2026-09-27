@@ -29,3 +29,19 @@ def create_order(status,customer_id,products):
         return None
     finally:
         conn.close()
+
+def update_order_status(id,new_status):
+    conn , cur = connect_db()
+    try:
+        cur.execute(
+            """
+            UPDATE orders SET status = %s WHERE id = %s
+            """
+        ,(new_status,id))
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
