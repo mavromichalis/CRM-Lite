@@ -3,7 +3,7 @@ from ..models.user import User
 from ..utils.hasher import hash
 from ..utils.id_generator import generate_id
 from ..utils.logs import generate_logs
-from ..models.errors import InactiveAccount,WrongPassword,UsernameTaken,UserDoesNotExist
+from ..models.errors import InactiveAccount,WrongPassword,UsernameTaken,UserDoesNotExist,AppError
 
 def attempt_auth(username,password):
     hashed_pwd = hash(password)
@@ -42,7 +42,7 @@ def attempt_auth(username,password):
             "Message":InactiveAccount.message,
             "Status Code":InactiveAccount.status_code
         }
-    except Exception as e:
+    except AppError as e:
         return e
     finally:
         conn.close()
@@ -59,8 +59,8 @@ def generate_user_object(id):
         if res:
             return User(id,res[1],res[2],res[3],res[4],res[5])
         else:
-            raise Exception
-    except Exception:
+            raise AppError
+    except AppError:
         return None
     finally:
         conn.close()
@@ -85,7 +85,7 @@ def create_user(username,password,real_name,role,is_active):
             "Message":UsernameTaken.message,
             "Status Code":UsernameTaken.status_code
         }
-    except Exception:
+    except AppError:
         conn.rollback()
         return None
     finally:

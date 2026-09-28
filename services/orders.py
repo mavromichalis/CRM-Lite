@@ -1,7 +1,7 @@
 from ..db.connection import connect_db
 from ..models.order import Order
 from ..utils.id_generator import generate_id
-from ..models.errors import OrderNotFound
+from ..models.errors import OrderNotFound,AppError
 
 def create_order(status,customer_id,products):
     conn , cur = connect_db()
@@ -16,7 +16,7 @@ def create_order(status,customer_id,products):
             ,(product))
             res = cur.fetchone()
             if res is None:
-                raise Exception
+                raise AppError
             price+=res[0]
         cur.execute(
             """
@@ -25,7 +25,7 @@ def create_order(status,customer_id,products):
         ,(id,status,customer_id,products,price))
         conn.commit()
         return Order(id,status,customer_id,products,price)
-    except Exception:
+    except AppError:
         conn.rollback()
         return None
     finally:
@@ -55,7 +55,7 @@ def update_order_status(id,new_status):
             "Message":OrderNotFound.message,
             "Status Code":OrderNotFound.status_code
         }
-    except Exception:
+    except AppError:
         conn.rollback()
         return False
     finally:

@@ -1,4 +1,5 @@
 from ..db.connection import connect_db
+from ..models.errors import AppError
 
 def update_stock(product):
     conn , cur = connect_db()
@@ -10,9 +11,9 @@ def update_stock(product):
         ,(product.id,))
         stock = cur.fetchone()[0]
         if stock is None:
-            raise Exception 
+            raise AppError 
         if stock == -1 or stock == 0:
-            raise Exception
+            raise AppError
         stock -=1
         cur.execute(
             """
@@ -21,7 +22,7 @@ def update_stock(product):
         ,(stock,product.id))
         conn.commit()
         product.stock = stock
-    except Exception:
+    except AppError:
         conn.rollback()
     finally:conn.close()
 
@@ -35,7 +36,7 @@ def add_stock(product_id,added_stock):
         ,(added_stock,product_id))
         conn.commit()
         return True
-    except Exception:
+    except AppError:
         conn.rollback()
         return False
     finally: conn.close()

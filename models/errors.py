@@ -1,3 +1,8 @@
+class AppError(Exception):
+    code = "UNKNOWN_ERROR"
+    message = "An unknown error occured."
+    status_code = 101 
+
 class InactiveAccount(Exception):
     code = "INACTIVE_ACCOUNT"
     message = "Account is not active."
@@ -28,3 +33,4 @@ class OrderNotFound(Exception):
     code="ORDER_NOT_FOUND"
     message = "Order not found."
     status_code = 601
+
