@@ -52,7 +52,7 @@ class NoStockTracking(Exception):
     status_code = 402
 
 class SoldOutProduct(Exception):
-    code="SOLD_OUT_PORDUCT"
+    code="SOLD_OUT_PRODUCT"
     message = "Product sold out"
     status_code = 403
 

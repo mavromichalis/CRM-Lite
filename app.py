@@ -14,6 +14,7 @@ try:
 
     load_dotenv(Path(__file__).resolve().with_name(".env"))
     from db.connection import connect_db
+    from utils.hasher import hash as hash_password
 except ImportError as exc:
     raise SystemExit(
         "CRM-Lite needs psycopg2 and python-dotenv installed before it can start."
@@ -64,14 +65,14 @@ def make_id(cur, table):
 class CRMApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("CRM-Lite")
-        self.geometry("1180x760")
-        self.minsize(980, 640)
+        self.title("CRM-Lite | Sign in")
+        self.geometry("460x520")
+        self.minsize(420, 460)
         self.configure(bg=BG)
-        self.current_page = "Dashboard"
+        self.current_page = None
+        self.authenticated_user = None
         self._setup_style()
-        self._build_shell()
-        self.show_page("Dashboard")
+        self._show_login()
 
     def _setup_style(self):
         style = ttk.Style(self)
@@ -86,6 +87,77 @@ class CRMApp(tk.Tk):
         style.configure("TCombobox", padding=7, fieldbackground=WHITE)
         style.configure("Vertical.TScrollbar", background=WHITE, troughcolor=WHITE,
                         bordercolor=WHITE, arrowcolor=MUTED)
+
+    def _show_login(self):
+        for child in self.winfo_children():
+            child.destroy()
+        self.title("CRM-Lite | Sign in")
+        self.configure(bg=BG)
+
+        card = tk.Frame(self, bg=WHITE, highlightbackground=LINE, highlightthickness=1)
+        card.place(relx=0.5, rely=0.5, anchor="center", width=360)
+        tk.Label(card, text="C", bg=ACCENT, fg=WHITE, width=2, height=1,
+                 font=("Helvetica Neue", 18, "bold")).pack(pady=(28, 12))
+        tk.Label(card, text="Welcome to CRM-Lite", bg=WHITE, fg=INK,
+                 font=("Helvetica Neue", 18, "bold")).pack()
+        tk.Label(card, text="Sign in with your account to continue.", bg=WHITE, fg=MUTED,
+                 font=("Helvetica Neue", 10)).pack(pady=(6, 22))
+
+        form = tk.Frame(card, bg=WHITE)
+        form.pack(fill="x", padx=28)
+        tk.Label(form, text="Username", bg=WHITE, fg=MUTED,
+                 font=("Helvetica Neue", 9, "bold")).pack(anchor="w", pady=(0, 5))
+        self.login_username = tk.Entry(form, relief="flat", bd=0, bg="#f7f8fb", fg=INK,
+                                       insertbackground=INK, font=("Helvetica Neue", 11))
+        self.login_username.pack(fill="x", ipady=10, padx=1)
+        tk.Label(form, text="Password", bg=WHITE, fg=MUTED,
+                 font=("Helvetica Neue", 9, "bold")).pack(anchor="w", pady=(15, 5))
+        self.login_password = tk.Entry(form, show="•", relief="flat", bd=0, bg="#f7f8fb",
+                                       fg=INK, insertbackground=INK,
+                                       font=("Helvetica Neue", 11))
+        self.login_password.pack(fill="x", ipady=10, padx=1)
+        self.login_password.bind("<Return>", lambda _event: self._login())
+        self.login_username.bind("<Return>", lambda _event: self.login_password.focus_set())
+        self.login_error = tk.Label(form, text="", bg=WHITE, fg=RED,
+                                    font=("Helvetica Neue", 9), wraplength=290, justify="left")
+        self.login_error.pack(anchor="w", pady=(9, 0))
+        self._button(card, "Sign in", self._login).pack(fill="x", padx=28, pady=(12, 28))
+        self.login_username.focus_set()
+
+    def _login(self):
+        username = self.login_username.get().strip()
+        password = self.login_password.get()
+        if not username or not password:
+            self.login_error.configure(text="Enter your username and password.")
+            return
+        try:
+            account = db_query(
+                "SELECT id, password_hash, is_active, real_name FROM users WHERE username = %s",
+                (username,), fetch="one",
+            )
+        except Exception as exc:
+            self.login_error.configure(text=self._error_text(exc))
+            return
+        if not account or account[2].lower() != "active" or hash_password(password) != account[1]:
+            self.login_password.delete(0, "end")
+            self.login_error.configure(text="The username or password is incorrect, or the account is inactive.")
+            return
+        self.authenticated_user = {"id": account[0], "name": account[3], "username": username}
+        self.title("CRM-Lite")
+        self.geometry("1180x760")
+        self.minsize(980, 640)
+        for child in self.winfo_children():
+            child.destroy()
+        self.current_page = "Dashboard"
+        self._build_shell()
+        self.show_page("Dashboard")
+
+    def _logout(self):
+        self.authenticated_user = None
+        self.current_page = None
+        self.geometry("460x520")
+        self.minsize(420, 460)
+        self._show_login()
 
     def _build_shell(self):
         self.sidebar = tk.Frame(self, bg=SIDEBAR, width=230)
@@ -120,6 +192,10 @@ class CRMApp(tk.Tk):
         tk.Label(footer, text="Manage your business in one place", bg=SIDEBAR,
                  fg=SIDEBAR_MUTED, font=("Helvetica Neue", 9), wraplength=180,
                  justify="left").pack(anchor="w", pady=(5, 0))
+        tk.Button(footer, text="Sign out", command=self._logout, cursor="hand2",
+                  relief="flat", borderwidth=0, bg=SIDEBAR, fg=SIDEBAR_MUTED,
+                  activebackground=SIDEBAR, activeforeground=WHITE,
+                  font=("Helvetica Neue", 9, "bold")).pack(anchor="w", pady=(14, 0))
 
         self.main = tk.Frame(self, bg=BG)
         self.main.pack(side="left", fill="both", expand=True)
