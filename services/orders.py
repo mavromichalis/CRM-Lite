@@ -5,15 +5,15 @@ from ..models.errors import OrderNotFound,AppError
 
 def create_order(status,customer_id,products):
     conn , cur = connect_db()
-    id = generate_id('orders')
     try:
+        id = generate_id('orders')
         price = 0 
         for product in products:
             cur.execute(
                 """
                 SELECT price FROM products WHERE id = %s
                 """
-            ,(product))
+            ,(product,))
             res = cur.fetchone()
             if res is None:
                 raise AppError
@@ -38,7 +38,7 @@ def update_order_status(id,new_status):
             """
             SELECT 1 FROM orders WHERE id = %s
             """
-        )
+        ,(id,))
         res = cur.fetchone()
         if not res:
             raise OrderNotFound

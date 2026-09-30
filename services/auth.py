@@ -4,6 +4,7 @@ from ..utils.hasher import hash
 from ..utils.id_generator import generate_id
 from ..utils.logs import generate_logs
 from ..models.errors import InactiveAccount,WrongPassword,UsernameTaken,UserDoesNotExist,AppError
+from .users import check_username_avail
 
 def attempt_auth(username,password):
     hashed_pwd = hash(password)
@@ -68,7 +69,7 @@ def generate_user_object(id):
 def create_user(username,password,real_name,role,is_active):
     conn , cur = connect_db()
     try:
-        if attempt_auth(username,'') != UserDoesNotExist.message:
+        if check_username_avail(username) == False:
             raise UsernameTaken
         id = generate_id('users')
         cur.execute(
