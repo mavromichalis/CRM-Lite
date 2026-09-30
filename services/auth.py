@@ -3,7 +3,7 @@ from ..models.user import User
 from ..utils.hasher import hash
 from ..utils.id_generator import generate_id
 from ..utils.logs import generate_logs
-from ..models.errors import InactiveAccount,WrongPassword,UsernameTaken,UserDoesNotExist,AppError
+from ..models.errors import InactiveAccount,WrongPassword,UsernameTaken,UserDoesNotExist,AppError,PostgresError
 from .users import check_username_avail
 
 def attempt_auth(username,password):
@@ -25,26 +25,15 @@ def attempt_auth(username,password):
             return generate_user_object(res[1])
         else:
             raise InactiveAccount
-    except UserDoesNotExist:
+    except UserDoesNotExist or WrongPassword or InactiveAccount or AppError as e:
         return {
-            "Code":UserDoesNotExist.code,
-            "Message":UserDoesNotExist.message,
-            "Status Code":UserDoesNotExist.status_code
+            "Code":e.code,
+            "Message":e.message,
+            "Status Code":e.status_code
         }
-    except WrongPassword:
-        return {
-            "Code":WrongPassword.code,
-            "Message":WrongPassword.message,
-            "Status Code":WrongPassword.status_code
-        }
-    except InactiveAccount:
-        return {
-            "Code":InactiveAccount.code,
-            "Message":InactiveAccount.message,
-            "Status Code":InactiveAccount.status_code
-        }
-    except AppError as e:
-        return e
+    except PostgresError as e:
+        conn.rollback()
+        return e.message
     finally:
         conn.close()
 
@@ -60,8 +49,11 @@ def generate_user_object(id):
         if res:
             return User(id,res[1],res[2],res[3],res[4],res[5])
         else:
-            raise AppError
-    except AppError:
+            raise UserDoesNotExist
+    except UserDoesNotExist or AppError:
+        return None
+    except PostgresError: 
+        conn.rollback()
         return None
     finally:
         conn.close()
@@ -80,13 +72,13 @@ def create_user(username,password,real_name,role,is_active):
         conn.commit()
         generate_logs(username,'User signed up.')
         return generate_user_object(id)
-    except UsernameTaken:
+    except UsernameTaken or AppError as e:
             return {
-            "Code":UsernameTaken.code,
-            "Message":UsernameTaken.message,
-            "Status Code":UsernameTaken.status_code
+            "Code":e.code,
+            "Message":e.message,
+            "Status Code":e.status_code
         }
-    except AppError:
+    except PostgresError:
         conn.rollback()
         return None
     finally:

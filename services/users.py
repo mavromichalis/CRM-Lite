@@ -2,7 +2,7 @@ from ..models.user import User
 from ..db.connection import connect_db
 from ..utils.id_generator import generate_id
 from ..utils.hasher import hash
-from ..models.errors import AppError
+from ..models.errors import AppError,PostgresError
 
 def check_username_avail(username):
     conn , cur = connect_db()
@@ -14,6 +14,9 @@ def check_username_avail(username):
         else:
             return True #Free
     except AppError:
+        return False
+    except PostgresError:
+        conn.rollback()
         return False
     finally: conn.close()
 

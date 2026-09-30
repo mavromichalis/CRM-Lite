@@ -1,5 +1,5 @@
 from ..db.connection import connect_db
-from ..models.errors import ProductNotFound,NoStockTracking,AppError,SoldOutProduct
+from ..models.errors import ProductNotFound,NoStockTracking,AppError,SoldOutProduct,PostgresError
 
 def update_stock(product):
     conn , cur = connect_db()
@@ -24,7 +24,7 @@ def update_stock(product):
         ,(stock[0],product.id))
         conn.commit()
         product.stock = stock
-    except ProductNotFound or SoldOutProduct as e:
+    except ProductNotFound or SoldOutProduct or AppError as e:
         return {
             "Code":e.code,
             "Message":e.message,
@@ -32,7 +32,7 @@ def update_stock(product):
         }
     except NoStockTracking:
         return False
-    except AppError:
+    except PostgresError:
         conn.rollback()
     finally:conn.close()
 
@@ -54,13 +54,13 @@ def add_stock(product_id,added_stock):
         ,(added_stock,product_id))
         conn.commit()
         return True
-    except ProductNotFound as e:
+    except ProductNotFound or AppError as e:
         return {
             "Code":e.code,
             "Message":e.message,
             "Status Code":e.status_code
         }
-    except AppError:
+    except PostgresError:
         conn.rollback()
         return False
     finally: conn.close()

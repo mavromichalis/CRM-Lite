@@ -1,7 +1,14 @@
+import psycopg2
+
 class AppError(Exception):
     code = "UNKNOWN_ERROR"
     message = "An unknown error occured."
     status_code = 101 
+
+class PostgresError(psycopg2.Error):
+    code="DATABASE_ERROR"
+    message = "Error in your database"
+    status_code = 102
 
 class InactiveAccount(AppError):
     code = "INACTIVE_ACCOUNT"

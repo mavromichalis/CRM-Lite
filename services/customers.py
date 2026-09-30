@@ -2,7 +2,7 @@ from ..db.connection import connect_db
 from datetime import datetime
 from ..utils.id_generator import generate_id
 from ..models.customer import Customer
-from ..models.errors import CustomerNotFound,AppError
+from ..models.errors import CustomerNotFound,AppError,PostgresError
 
 def add_customer(type,f_name,l_name,vat,phone,address,status):
     conn,cur = connect_db()
@@ -15,7 +15,7 @@ def add_customer(type,f_name,l_name,vat,phone,address,status):
         ,(id,type,f_name,l_name,vat,phone,address,[],datetime.now(),datetime.now(),status))
         conn.commit()
         return True
-    except AppError:
+    except PostgresError:
         conn.rollback()
         return False
     finally:
@@ -41,13 +41,13 @@ def append_order(id,order_id):
         ,(current_orders,id))
         conn.commit()
         return True
-    except CustomerNotFound:
+    except CustomerNotFound or AppError as e:
         return {
-            "Code":CustomerNotFound.code,
-            "Message":CustomerNotFound.message,
-            "Status Code":CustomerNotFound.status_code
+            "Code":e.code,
+            "Message":e.message,
+            "Status Code":e.status_code
         }
-    except AppError:
+    except PostgresError:
         conn.rollback()
         return False
     finally: conn.close()
@@ -82,13 +82,13 @@ def update_status(id,new_status):
         ,(new_status,id))
         conn.commit()
         return True
-    except CustomerNotFound:
+    except CustomerNotFound or AppError as e:
         return {
-            "Code":CustomerNotFound.code,
-            "Message":CustomerNotFound.message,
-            "Status Code":CustomerNotFound.status_code
+            "Code":e.code,
+            "Message":e.message,
+            "Status Code":e.status_code
         }
-    except AppError:
+    except PostgresError:
         conn.rollback()
         return False
     finally:
@@ -106,6 +106,8 @@ def generate_object(id):
         if not res: raise AppError
         return Customer(id,res[1],res[2],res[3],res[4],res[5],res[6],res[7],res[8],res[9],res[10])
     except AppError:
+        return AppError.message
+    except PostgresError:
         conn.rollback()
-        return None
+        return PostgresError.message
     finally: conn.close()
