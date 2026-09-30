@@ -12,16 +12,16 @@ def update_stock(product):
         stock = cur.fetchone()[0]
         if not stock:
             raise ProductNotFound 
-        if stock[0] == 0:
+        if stock == 0:
             raise SoldOutProduct
-        if stock[0] == -1:
+        if stock == -1:
             raise NoStockTracking
-        stock[0] -=1
+        stock -=1
         cur.execute(
             """
             UPDATE products SET stock = %s WHERE id = %s
             """
-        ,(stock[0],product.id))
+        ,(stock,product.id))
         conn.commit()
         product.stock = stock
     except ProductNotFound or SoldOutProduct or AppError as e:
